@@ -2,7 +2,20 @@
 
 ## 1. Game Overview
 
-miniRPG is a single-player, text-oriented open-world RPG designed primarily as a mobile web application.
+miniRPG is a single-player, open-world 2D RPG designed primarily as a mobile web application.
+
+The game combines a graphical top-down world inspired by classic tile-based RPGs with text-driven dialogues, quests, clues and narrative events.
+
+Exploration and tactical combat are displayed graphically using a top-down tile/grid view.
+
+Text remains an important part of the game for:
+- NPC conversations
+- Narrative events
+- Descriptions
+- Quests
+- Clues
+- Journal entries
+- Combat information
 
 The player controls a character exploring a kingdom dominated by the tyrant Ghor.
 
@@ -10,10 +23,10 @@ The main objective is to defeat Ghor and free the kingdom.
 
 Ghor cannot be defeated by ordinary equipment. The player must find four Sacred Jewels and combine each one with a corresponding legendary artifact:
 
-* Sword
-* Armor
-* Shield
-* Helm
+- Sword
+- Armor
+- Shield
+- Helm
 
 Only when the four artifacts have been empowered by their Sacred Jewels will the player possess enough power to confront Ghor.
 
@@ -21,23 +34,24 @@ The world is completely open. The player is not forced to follow the main quest 
 
 ---
 
-# 2. Core Principles
+## 2. Core Principles
 
 miniRPG must follow these principles:
 
-* Single-player only.
-* Mobile-first web application.
-* Primarily text-based interface.
-* Completely open world.
-* Turn-based combat.
-* Tactical combat using a grid.
-* Character progression through attributes, equipment, spells and discoveries.
-* No mandatory character classes.
-* The player may save the game at any time.
-* NPCs can provide information, rumors, clues and quests.
-* Important information discovered by the player is stored automatically or manually in a Journal.
-* The Journal contains both quests and clues.
-* Exploration should be possible without necessarily following quests.
+- Single-player only.
+- Mobile-first web application.
+- Graphical 2D top-down world.
+- Tile/grid-based movement.
+- Pixel-art visual direction.
+- Text-driven dialogues and narrative.
+- Completely open world.
+- Turn-based tactical combat.
+- Character progression through attributes, equipment, spells and discoveries.
+- No mandatory character classes.
+- The player may save the game at any time.
+- NPCs can provide information, rumors, clues and quests.
+- Important information can be stored in the Journal.
+- Exploration should be possible without necessarily following quests.
 
 ---
 
@@ -388,6 +402,132 @@ Example with Strength 10:
 Inventory weight therefore has a direct tactical impact during combat.
 
 ---
+
+# Graphical Interface
+
+miniRPG uses a top-down 2D graphical game view inspired by classic tile-based RPGs.
+
+The visual direction should evoke classic games such as early Ultima-style RPGs while remaining clean and readable on modern smartphones.
+
+The game must not reproduce the graphical limitations of historical hardware.
+
+## Main Game View
+
+The main screen contains:
+
+1. A graphical game area.
+2. A compact status/HUD area.
+3. A dialogue and information area.
+4. Access to important game functions.
+
+Typical functions include:
+
+- Character
+- Inventory
+- Equipment
+- Journal
+- Save
+
+The graphical area occupies most of the available screen.
+
+## Dialogue
+
+NPC conversations and narrative events appear in a dialogue box associated with the graphical game view.
+
+The dialogue box may appear below the game view or as an overlay depending on available screen space.
+
+On mobile, dialogue must remain readable without hiding essential interaction controls.
+
+Dialogue may provide selectable responses when required.
+
+## Exploration Rendering
+
+World exploration is displayed using a top-down tile-based view.
+
+Tiles may represent:
+
+- Grass
+- Roads
+- Forest
+- Water
+- Mountains
+- Buildings
+- Walls
+- Doors
+- Cave entrances
+- Dungeon terrain
+- Other world features
+
+Characters, NPCs, creatures and objects are displayed as sprites positioned on the tile map.
+
+The world is larger than the visible screen.
+
+The renderer displays the relevant area around the player.
+
+## Combat Rendering
+
+Combat uses the same general top-down graphical philosophy as exploration.
+
+Standard combat takes place on the 20x20 tactical grid defined by the combat rules.
+
+The graphical interface must clearly show:
+
+- Player position
+- Enemy positions
+- Terrain
+- Obstacles
+- Movement possibilities
+- Selected targets
+- Area-of-effect spell zones
+- Relevant combat feedback
+
+The combat interface must support touch interaction.
+
+Selecting a destination should allow the game to display whether the destination is reachable and the movement cost before executing the move.
+
+## Rendering Technology
+
+The game area should use HTML5 Canvas with a dedicated 2D renderer.
+
+React manages the application interface surrounding the game view.
+
+React is responsible for elements such as:
+
+- Menus
+- HUD
+- Dialogue boxes
+- Inventory
+- Character screen
+- Journal
+- Save/load interface
+
+The Canvas renderer is responsible for drawing:
+
+- Tiles
+- Sprites
+- Combat grid
+- Terrain
+- Selection indicators
+- Movement indicators
+- Graphical effects
+
+The renderer must never contain authoritative gameplay rules.
+
+It receives game state and renders it.
+
+Game rules remain inside the game engine.
+
+## Graphics and Assets
+
+Graphics should use a coherent pixel-art style.
+
+Initial development may use simple placeholder tiles and sprites.
+
+Gameplay development must not depend on having final artwork.
+
+Graphical assets should be replaceable without modifying game-engine rules.
+
+Assets should use stable identifiers and organized directories.
 
 # 15. Combat System
 
