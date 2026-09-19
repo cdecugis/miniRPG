@@ -362,7 +362,10 @@ Weapons will later define which attribute or attributes affect:
 
 # 14. Carrying Capacity
 
-Strength determines how much weight the character can carry without movement penalties.
+Maximum inventory capacity is `strength * 5 kg`, separate from the movement penalties below.
+At Strength 10 the maximum is 50 kg, but loads above 40 kg still prevent tactical movement.
+
+Strength also determines how much weight the character can carry without movement penalties.
 
 Base carrying capacity:
 
@@ -1022,3 +1025,146 @@ When implementing new features:
 * Game data is written in English.
 * The architecture must remain suitable for mobile web usage.
 * New mechanics should be added to this specification before or alongside their implementation.
+
+---
+
+# 29. Fixed Exploration Prototype
+
+This prototype is a separate exploration milestone, requested after Character Creation.
+It does not implement the combat foundation or the final starting city.
+
+* Use a fixed, hand-authored 30x30 test map.
+* Terrain includes grass, road, tree, water, house and rock.
+* Grass and road are walkable. Tree, water, house and rock block movement.
+* The player occupies one tile, with integer coordinates stored in serializable game state.
+* Coordinates remain zero-based, with x increasing east and y increasing north.
+* Movement is one tile at a time in eight directions. Destinations must be inside the map.
+* Diagonal movement is blocked if either adjacent orthogonal tile is blocked.
+* Exploration does not use tactical movement points or carrying penalties.
+* Movement and collision belong to the game engine, independently of React and Canvas.
+* A following camera stays inside the map. Resizing changes the view, not world coordinates.
+* Canvas renders terrain and the player with replaceable placeholder graphics.
+* Keyboard and touch controls issue movement requests to the same game engine.
+* A compact HUD displays the character name, HP and gold.
+
+The test-map layout and spawn are prototype content, not permanent starting-world rules.
+Combat, enemies, NPCs, dialogue, quests, merchants, inventory management, saving,
+procedural generation and final artwork remain outside this milestone.
+
+---
+
+# 30. Greenhaven, Dialogue and the First Clue
+
+This milestone extends the outdoor prototype with a local town; it does not introduce
+the final starting world or change combat rules.
+
+* Locations have stable IDs, a `world` or `town` type, and their own fixed map data.
+* The outdoor location is `world`. The first town is `greenhaven`, displayed as Greenhaven.
+* A labeled outdoor entrance and a town exit are explicitly activated with Interact
+  while the player stands on the gate tile. Transitions assign fixed approach/arrival
+  positions and never activate automatically on arrival.
+* The prototype entrance is `(14, 19)` outdoors; town arrival is `(8, 2)`.
+  The town exit is `(8, 1)`; outdoor return is `(14, 18)`.
+* NPC definitions contain stable IDs, names, locations, tile positions and dialogue references.
+  Greenhaven contains Alden (an old traveler), Mara (a guard) and Nell (a villager).
+* NPCs are stationary and occupy blocked tiles. The existing diagonal corner rule
+  also applies to NPC occupancy.
+* NPC interaction requires explicit activation from one of the eight adjacent tiles.
+  Merely approaching an NPC does not trigger conversation.
+* Dialogue is linear and can contain several consecutive lines. Movement and other
+  interactions are blocked during active dialogue. The player advances each line,
+  then closes the final line to complete the conversation.
+* Completing Alden's conversation discovers `eastern_hills_strange_lights`:
+  reports of strange lights beyond the eastern hills at night.
+* Journal clues contain a stable ID, title, description, source NPC and discovered state.
+  Repeating a conversation never duplicates a clue. Clues survive location transitions.
+* The Journal currently displays only Clues, including an empty state and a close action.
+* Location, position, dialogue progression and Journal discoveries remain serializable
+  domain state. React displays them; Canvas only renders supplied map/entity data.
+* F is the interaction key, preserving E for diagonal movement. Touch uses Interact.
+  Available actions are labeled; F activates the first displayed action if several exist.
+* Mobile movement/interaction controls overlay the lower map area and are hidden
+  during dialogue. Dialogue text and advance/close controls remain unobstructed.
+
+Town layout, NPC positions and transition coordinates are prototype content.
+Combat, enemies, shops, buying/selling, inns/resting, interiors, quests, branching
+dialogue, magic, save/load, procedural generation and final artwork remain out of scope.
+
+---
+
+# 31. First Tactical Wolf Encounter
+
+This milestone implements the combat foundations from sections 14–24. Earlier
+milestone scope exclusions do not exclude the combat work explicitly requested here.
+
+* A fixed outdoor encounter at `(18, 14)` starts when entered. Exploration is paused
+  and its return state is retained. Victory clears this encounter for the current game.
+* The battlefield is open grass, 20x20, with the player at `(10, 0)` and Wolf at `(10, 19)`.
+* Enemy `wolf`: Strength 8, Agility 12, Willpower 8, Intelligence 3, Charisma 3,
+  maximum/current starting HP 6, AC 10.
+* `wolf_bite`: 1d4, Agility attack bonus, Strength damage bonus, adjacent melee range.
+* `long_sword`: 1d8, Strength attack and damage bonuses, adjacent melee range.
+  Diagonal adjacency counts as melee range for both attacks.
+* Initiative is one d20 plus Agility bonus. Higher total acts first; ties use higher
+  Agility, then ascending stable combatant ID. Initiative dice do not explode.
+* A turn resets movement to Agility, adjusted by the player's carrying penalty.
+  The Wolf has no carrying penalty. Orthogonal movement costs 1, diagonal movement
+  costs 1.4. Destinations must be adjacent, unoccupied and inside the battlefield;
+  their cost cannot exceed remaining movement. Movement costs are not rounded.
+* A combatant may move and attack once, or end its turn without attacking.
+  A valid attack ends the turn even on a miss. Invalid actions do not spend a turn.
+* Natural attack rolls of 20 repeatedly explode until a non-20 result is rolled.
+  Preserve the full list, raw sum and final modified total in the attack result.
+* With margin = final attack roll - target AC: margin <= 0 is `miss`, 1–10 is
+  `normal`, above 10 through 20 is `very_good`, and above 20 is `critical`.
+* Wolf AI attacks if adjacent; otherwise it moves toward the player using its
+  movement budget, including diagonals, attacks if it reaches range, then ends its turn.
+* At Wolf HP 0, combat immediately becomes victory. The player explicitly returns to
+  the retained outdoor position, keeping remaining HP. No XP, gold or loot is awarded.
+* At player HP 0, combat immediately becomes Game Over. No character is automatically recreated.
+* Combat state, initiative, turns, movement budgets, HP and return information are serializable.
+  React/Canvas display state; log text is derived from results and never drives rules.
+* The tactical Canvas retains readable tiles, a visible grid, adjacent movement previews,
+  and a camera that can follow either combatant or be panned to inspect the battlefield.
+
+## Explicitly provisional decisions — not permanent rules
+
+The user authorized these temporary implementations, pending final gameplay confirmation:
+
+* Fractional damage is rounded down with `Math.floor()`.
+* Critical damage temporarily uses x1.5, centralized independently from the final design.
+* Minimum successful final damage is 1, applied after attribute/quality calculation.
+* The starting load is provisionally unencumbered, as explicitly selected by the user.
+  Long Sword and gold weights remain undefined; no permanent item weights are introduced.
+  All carrying tiers are implemented and tested against supplied loads.
+
+No multi-enemy encounters, random encounters, rewards, loot, XP, progression, equipment
+armor, ranged attacks, magic, terrain modifiers, status effects, advanced AI or saving
+are introduced by this milestone.
+
+
+---
+
+# 32. Responsive Feedback and Initial Inventory
+
+* Phone tiles render at 32 CSS pixels, desktop tiles at 48. This changes only
+  presentation, never world coordinates, movement costs or attack range.
+* Mobile reserves a scrollable message panel below the map; desktop places
+  messages and character statistics in a right-hand panel. Dialogue uses this area.
+* Combat shows damage/miss feedback, logs every initiative/attack calculation to
+  the browser console, and optionally plays synthesized player/enemy hit/miss sounds.
+* Character state now includes a serializable backpack in addition to equipment.
+  The initial prototype supports transferring the existing Long Sword between the
+  backpack and equipped weapon outside dialogue/combat, without creating or losing it.
+  A sword must be equipped to make a sword attack. Unarmed attacks are undefined.
+* The user specified carrying capacity as `strength * 5 kg` (50 kg at Strength 10).
+
+## Weight clarification pending
+
+Item and gold weights remain undefined under the earlier explicit instruction.
+The starting load remains provisionally unencumbered; unknown weights are not
+represented as zero-weight item definitions. The user confirmed that Strength * 5 kg
+is a separate maximum capacity; the movement tiers in section 14 remain unchanged.
+Actual carried weight enforcement still awaits item and gold weights. Transfers within carried equipment/backpack do not change total load.
+
+No loot, pickup/drop, shops, consumables, armor, unarmed combat or saving are added.
